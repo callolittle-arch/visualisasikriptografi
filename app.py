@@ -3,7 +3,8 @@ import time
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-#caesar
+
+
 def caesar_cipher(text, shift, mode):
     result = ""
     process_log = []
@@ -124,9 +125,6 @@ def rsa_process(text_or_ints, p, q, mode):
     return result, process_log
 
 
-# ==========================================
-# CONFIG & STYLING
-# ==========================================
 st.set_page_config(
     page_title="Modul Kriptosistem",
     layout="wide",
@@ -165,7 +163,7 @@ st.markdown(
 
     /* Header Ringkas */
     .header-box {
-        background: #0F172A;
+        background: #94A3B8;
         padding: 1.25rem 1.75rem;
         border-radius: 12px;
         color: white;
@@ -179,7 +177,7 @@ st.markdown(
         font-weight: 700;
         margin: 0;
         letter-spacing: -0.02em;
-        color: #F8FAFC;
+        color: #BB6464;
     }
 
     /* Navbar Wrapper */
@@ -322,7 +320,7 @@ st.markdown(
 st.markdown(
     """
 <div class="header-box">
-    <h1>Modul Kriptosistem Interaktif</h1>
+    <h1>Sistem kripto interaktif</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -361,7 +359,7 @@ with nav_col:
                 "--hover-color": "#1E293B",
             },
             "nav-link-selected": {
-                "background-color": "#2563EB",
+                "background-color": "#94A3B8",
                 "color": "#FFFFFF",
                 "font-weight": "600",
             },
@@ -373,12 +371,14 @@ with toggler_col:
     with st.popover("Mode Operasi", use_container_width=True):
         is_decrypt_toggle = st.toggle("Dekripsi", value=False)
         is_encrypt = not is_decrypt_toggle
-        st.caption(
-            f"Status: **{'Enkripsi' if is_encrypt else 'Dekripsi'}** aktif."
+        st.markdown(
+            '<p style="color: white;"<b>Aktif<b> : <b>Dekripsi</b>.</p>',
+            unsafe_allow_html=True)
+
+        st.markdown(
+            '<p style="color: white;">Buka bagian #Lihat Proses# di bawah hasil untuk memahami langkah kerja algoritmanya.</p>',
+            unsafe_allow_html=True
         )
-
-mode = "Enkripsi" if is_encrypt else "Dekripsi"
-
 algo_info = {
     "Caesar Cipher": (
         "Caesar Cipher",
