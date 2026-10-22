@@ -19,8 +19,7 @@ def caesar_cipher(text, shift, mode):
             process_log.append(f"'{char}' -> Tetap -> '{char}'")
 
     return result, process_log
-
-
+    
 def vigenere_cipher(text, key, mode):
     result = ""
     process_log = []
@@ -51,6 +50,7 @@ for char in text:
         result += char
         process_log.append(f"'{char}' -> Tetap -> '{char}'")
 
+    return result, process_log
 
 def rc4(data, key):
     S = list(range(256))
