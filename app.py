@@ -46,11 +46,10 @@ for char in text:
             f"'{char}' + Kunci '{key_char}' (Shift {shift}) -> '{new_char}'"
         )
         key_idx += 1
+        
     else:
         result += char
         process_log.append(f"'{char}' -> Tetap -> '{char}'")
-        
-    return result, process_log
 
 
 def rc4(data, key):
