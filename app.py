@@ -27,22 +27,37 @@ def vigenere_cipher(text, key, mode):
     key = key.upper()
     key_idx = 0
 
+
+def vigenere_cipher(text, key, mode):
+    result = ""
+    process_log = []
+    key = key.upper()
+    key_idx = 0
+
     for char in text:
-        if char.isalpha():
+        # Hanya huruf ASCII A-Z dan a-z yang dienkripsi
+        if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
             start = ord("A") if char.isupper() else ord("a")
             shift = ord(key[key_idx % len(key)]) - ord("A")
+
             if mode == "decrypt":
                 shift = -shift
 
             new_char = chr((ord(char) - start + shift) % 26 + start)
             result += new_char
+
             process_log.append(
-                f"'{char}' + Kunci '{key[key_idx % len(key)]}' (Shift {shift}) -> '{new_char}'"
+                f"'{char}' + Kunci '{key[key_idx % len(key)]}' "
+                f"(Shift {shift}) -> '{new_char}'"
             )
+
             key_idx += 1
         else:
             result += char
             process_log.append(f"'{char}' -> Tetap -> '{char}'")
+
+    return result, process_log
+
 
     return result, process_log
 
