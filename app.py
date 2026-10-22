@@ -665,32 +665,487 @@ elif selected == "Super Enkripsi":
                 final_res = " ".join([str(x) for x in out_rsa])
 
                 render_result("Hasil Super Enkripsi", final_res)
+import streamlit as st
 
-                with st.expander("Detail Tahapan Enkripsi (1 - 4)"):
-                    t1, t2, t3, t4 = st.tabs(
-                        ["1. Caesar", "2. Vigenère", "3. RC4", "4. RSA"]
-                    )
-                    with t1:
-                        st.code(out_c)
-                    with t2:
-                        st.code(out_v)
-                    with t3:
-                        st.code(" ".join([hex(x)[2:] for x in out_r]))
-                    with t4:
-                        st.code(final_res)
-            else:
-                text_input = [int(x) for x in text.split()]
-                out_rsa, _ = rsa_process(text_input, p, q, "decrypt")
-                out_r, _ = rc4(out_rsa, rc4_key)
-                out_r_str = "".join([chr(x) for x in out_r])
-                out_v, _ = vigenere_cipher(out_r_str, v_key, "decrypt")
-                out_c, _ = caesar_cipher(out_v, c_shift, "decrypt")
+# ==========================================
+# 1. LOGIKA ALGORITMA KRIPTOGRAFI
+# ==========================================
 
-                render_result("Hasil Super Dekripsi", out_c)
+def caesar_cipher(text: str, shift: int, mode: str):
+    """
+    Caesar Cipher berbasis Alfabet (mengpertahankan huruf besar/kecil & karakter khusus)
+    """
+    result = []
+    process_log = []
+    effective_shift = shift if mode == "encrypt" else -shift
 
-        except Exception:
-            st.error(
-                "Gagal memproses Super Enkripsi. Pastikan parameter kunci dan format input sesuai."
-            )
+    for char in text:
+        if char.isalpha():
+            start = ord("A") if char.isupper() else ord("a")
+            new_code = (ord(char) - start + effective_shift) % 26 + start
+            new_char = chr(new_code)
+            result.append(new_char)
+            process_log.append(f"'{char}' → Geser {shift} → '{new_char}'")
+        else:
+            result.append(char)
+            process_log.append(f"'{char}' → Tetap (Simbol/Spasi)")
 
-st.markdown("</div>", unsafe_allow_html=True)
+    return "".join(result), process_log
+
+
+def vigenere_cipher(text: str, key: str, mode: str):
+    """
+    Universal Vigenère Cipher: Mendukung SEMUA Karakter (Huruf, Spasi, Angka, Simbol)
+    Berbasis pergeseran Modulo 256 byte/ASCII.
+    """
+    if not key:
+        key = "KEY"
+    
+    result = []
+    process_log = []
+
+    for i, char in enumerate(text):
+        char_code = ord(char)
+        key_char = key[i % len(key)]
+        key_shift = ord(key_char)
+
+        if mode == "encrypt":
+            new_code = (char_code + key_shift) % 256
+        else:
+            new_code = (char_code - key_shift + 256) % 256
+
+        new_char = chr(new_code)
+        result.append(new_char)
+        process_log.append(
+            f"Karakter '{char}' + Kunci '{key_char}' (Shift {key_shift}) → Hasil '{new_char}'"
+        )
+
+    return "".join(result), process_log
+
+
+def rc4_cipher(data_bytes: list, key_str: str):
+    """
+    RC4 Stream Cipher (KSA & PRGA dengan operasi XOR)
+    """
+    process_log = ["--- Inisialisasi KSA (Key Scheduling Algorithm) ---"]
+    S = list(range(256))
+    key_bytes = [ord(c) for c in key_str]
+    
+    j = 0
+    for i in range(256):
+        j = (j + S[i] + key_bytes[i % len(key_bytes)]) % 256
+        S[i], S[j] = S[j], S[i]
+    process_log.append("KSA Selesai. State Array S diacak.")
+
+    process_log.append("--- PRGA & Operasi XOR ---")
+    i = j = 0
+    result_bytes = []
+
+    for byte_val in data_bytes:
+        i = (i + 1) % 256
+        j = (j + S[i]) % 256
+        S[i], S[j] = S[j], S[i]
+        K = S[(S[i] + S[j]) % 256]
+
+        cipher_val = byte_val ^ K
+        result_bytes.append(cipher_val)
+        process_log.append(f"Byte: {byte_val} XOR Keystream: {K} → Hasil: {cipher_val}")
+
+    return result_bytes, process_log
+
+
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def mod_inverse(e, phi):
+    for d in range(2, phi):
+        if (d * e) % phi == 1:
+            return d
+    return 1
+
+
+def rsa_process(input_values: list, p: int, q: int, mode: str):
+    """
+    Kriptografi Asimetris RSA (C = M^e mod n  |  M = C^d mod n)
+    """
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    e = 3
+    while gcd(e, phi) != 1 and e < phi:
+        e += 1
+    d = mod_inverse(e, phi)
+
+    process_log = [
+        f"Parameter: p={p}, q={q}",
+        f"Modulus (n) = {n}",
+        f"Totient (phi) = {phi}",
+        f"Kunci Publik (e) = {e}",
+        f"Kunci Privat (d) = {d}",
+    ]
+
+    results = []
+    if mode == "encrypt":
+        process_log.append("--- Enkripsi RSA (C = M^e mod n) ---")
+        for val in input_values:
+            c = pow(val, e, n)
+            results.append(c)
+            process_log.append(f"M: {val} → {val}^{e} mod {n} = {c}")
+    else:
+        process_log.append("--- Dekripsi RSA (M = C^d mod n) ---")
+        for val in input_values:
+            m = pow(val, d, n)
+            results.append(m)
+            process_log.append(f"C: {val} → {val}^{d} mod {n} = {m}")
+
+    return results, process_log
+
+
+# ==========================================
+# 2. CONFIG & STYLING HITAM-PUTIH (MONOCHROME)
+# ==========================================
+
+st.set_page_config(
+    page_title="Modul Kriptosistem Interaktif",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
+# Custom CSS Monokromatik & Golden Ratio Layouting
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: #0F172A;
+    }
+
+    .main {
+        background-color: #FAFAFA;
+    }
+
+    /* Top Navigation Header */
+    .app-header {
+        background: #09090B;
+        color: #FAFAFA;
+        padding: 1.25rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #27272A;
+    }
+    .app-header h1 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        color: #FFFFFF;
+        letter-spacing: -0.02em;
+    }
+    .app-header p {
+        font-size: 0.8rem;
+        color: #A1A1AA;
+        margin: 0;
+    }
+
+    /* Algorithm Info Card */
+    .info-card {
+        background: #FFFFFF;
+        border: 1px solid #E4E4E7;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .badge-mono {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #F4F4F5;
+        color: #18181B;
+        border: 1px solid #E4E4E7;
+        margin-bottom: 0.35rem;
+    }
+
+    /* Buttons Styling */
+    div.stButton > button {
+        background: #09090B !important;
+        color: #FFFFFF !important;
+        border: 1px solid #09090B !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.25rem !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem !important;
+        width: 100% !important;
+        transition: all 0.2s ease !important;
+    }
+    div.stButton > button:hover {
+        background: #27272A !important;
+        border-color: #27272A !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Output Box */
+    .output-box {
+        background: #F4F4F5;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        padding: 1rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.875rem;
+        color: #09090B;
+        word-break: break-all;
+        white-space: pre-wrap;
+        min-height: 100px;
+    }
+
+    .log-item {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        color: #52525B;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #F4F4F5;
+    }
+
+    /* Pipeline Component */
+    .pipeline-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+    }
+    .pipeline-item {
+        background: #F4F4F5;
+        border: 1px solid #E4E4E7;
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        color: #18181B;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Header Utama
+st.markdown(
+    """
+    <div class="app-header">
+        <div>
+            <h1>Sistem Kriptosistem Interaktif</h1>
+            <p>Penerapan Kriptografi Klasik & Modern</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Menu Navigasi Utama
+menu_options = ["Caesar Cipher", "Vigenère Cipher", "RC4", "RSA", "Super Enkripsi"]
+selected_tab = st.radio("Pilih Algoritma:", menu_options, horizontal=True)
+
+# Toggle Mode Operasi (Enkripsi / Dekripsi)
+col_mode1, col_mode2 = st.columns([1, 4])
+with col_mode1:
+    op_mode = st.radio("Mode Operasi:", ["Enkripsi", "Dekripsi"], horizontal=True)
+    is_encrypt = op_mode == "Enkripsi"
+
+st.divider()
+
+# Information Database
+algo_info = {
+    "Caesar Cipher": ("Klasik", "Menggeser karakter berdasarkan nilai pergeseran tetap dalam alfabet."),
+    "Vigenère Cipher": ("Klasik", "Menggunakan kunci berulang untuk menggeser karakter secara dinamis. Mendukung huruf, angka, spasi & simbol."),
+    "RC4": ("Modern", "Stream cipher berbasis pembangkitan keystream pseudo-random melalui KSA & PRGA lalu di-XOR dengan data."),
+    "RSA": ("Modern", "Kriptografi asimetris berbasis faktorisasi dua bilangan prima (p & q) serta eksponensial modular."),
+    "Super Enkripsi": ("Modern (Gabungan)", "Penggabungan bertingkat 4 lapisan: Caesar → Vigenère → RC4 → RSA secara berurutan."),
+}
+
+kind, desc = algo_info[selected_tab]
+st.markdown(
+    f"""
+    <div class="info-card">
+        <span class="badge-mono">{kind}</span>
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">{selected_tab}</h3>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #71717A;">{desc}</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+if selected_tab == "Super Enkripsi":
+    st.markdown(
+        """
+        <div class="pipeline-container" style="margin-bottom: 1.25rem;">
+            <span style="font-weight: 600;">Alur Eksekusi:</span>
+            <span class="pipeline-item">1. Caesar</span> →
+            <span class="pipeline-item">2. Vigenère</span> →
+            <span class="pipeline-item">3. RC4</span> →
+            <span class="pipeline-item">4. RSA</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ==========================================
+# 3. GOLDEN RATIO LAYOUT (Major 1.618 : Minor 1)
+# ==========================================
+col_major, col_minor = st.columns([1.618, 1])
+
+# --- MAJOR COLUMN: Input & Pengaturan Parameter ---
+with col_major:
+    st.subheader("Input & Parameter")
+
+    # Dynamic Labels & Placeholders based on Mode
+    if not is_encrypt:
+        if selected_tab == "RC4":
+            input_label = "Input Hexadesimal (Dipisah Spasi):"
+            placeholder = "Contoh: 4a 6f 1c 3e..."
+        elif selected_tab in ["RSA", "Super Enkripsi"]:
+            input_label = "Input Angka Cipher (Dipisah Spasi):"
+            placeholder = "Contoh: 120 45 200 89..."
+        else:
+            input_label = "Input Ciphertext:"
+            placeholder = "Masukkan teks terenkripsi..."
+    else:
+        input_label = "Input Teks (Plaintext):"
+        placeholder = "Ketik pesan rahasia di sini (mendukung spasi & simbol)..."
+
+    input_text = st.text_area(input_label, height=140, placeholder=placeholder)
+
+    # Dynamic Parameter Inputs
+    if selected_tab == "Caesar Cipher":
+        shift_val = st.number_input("Nilai Shift (1–25):", min_value=1, max_value=25, value=3)
+
+    elif selected_tab == "Vigenère Cipher":
+        vigenere_key = st.text_input("Kunci Vigenère (Bebas Karakter & Spasi):", value="KUNCI123!")
+
+    elif selected_tab == "RC4":
+        rc4_key = st.text_input("Kunci String RC4:", value="SECRET")
+
+    elif selected_tab == "RSA":
+        col_p, col_q = st.columns(2)
+        with col_p:
+            rsa_p = st.number_input("Prima p:", value=17, min_value=2)
+        with col_q:
+            rsa_q = st.number_input("Prima q:", value=19, min_value=2)
+        st.caption(f"Estimasi Modulus (n = p × q): **{rsa_p * rsa_q}**")
+
+    elif selected_tab == "Super Enkripsi":
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            super_shift = st.number_input("Shift Caesar:", value=3)
+            super_vkey = st.text_input("Kunci Vigenère:", value="KUNCI")
+        with col_s2:
+            super_rkey = st.text_input("Kunci RC4:", value="SECRET")
+            col_sp, col_sq = st.columns(2)
+            with col_sp:
+                super_p = st.number_input("RSA p:", value=17)
+            with col_sq:
+                super_q = st.number_input("RSA q:", value=19)
+
+    btn_process = st.button(f"Proses {op_mode}")
+
+# --- MINOR COLUMN: Output Result & Computation Logs ---
+with col_minor:
+    st.subheader("Hasil & Komputasi")
+
+    if btn_process:
+        if not input_text.strip():
+            st.error("Error: Masukkan teks input terlebih dahulu!")
+        else:
+            try:
+                output_str = ""
+                logs = []
+                mode_str = "encrypt" if is_encrypt else "decrypt"
+
+                # 1. Caesar Execution
+                if selected_tab == "Caesar Cipher":
+                    output_str, logs = caesar_cipher(input_text, shift_val, mode_str)
+
+                # 2. Vigenère Execution
+                elif selected_tab == "Vigenère Cipher":
+                    output_str, logs = vigenere_cipher(input_text, vigenere_key, mode_str)
+
+                # 3. RC4 Execution
+                elif selected_tab == "RC4":
+                    if is_encrypt:
+                        bytes_in = [ord(c) for c in input_text]
+                        res_bytes, logs = rc4_cipher(bytes_in, rc4_key)
+                        output_str = " ".join([f"{b:02x}" for b in res_bytes])
+                    else:
+                        hex_vals = input_text.strip().split()
+                        bytes_in = [int(h, 16) for h in hex_vals]
+                        res_bytes, logs = rc4_cipher(bytes_in, rc4_key)
+                        output_str = "".join([chr(b) for b in res_bytes])
+
+                # 4. RSA Execution
+                elif selected_tab == "RSA":
+                    if rsa_p * rsa_q <= 255:
+                        st.warning("Peringatan: Disarankan (p × q) > 255 agar nilai ASCII lengkap.")
+                    
+                    if is_encrypt:
+                        bytes_in = [ord(c) for c in input_text]
+                        res_ints, logs = rsa_process(bytes_in, rsa_p, rsa_q, "encrypt")
+                        output_str = " ".join([str(i) for i in res_ints])
+                    else:
+                        ints_in = [int(x) for x in input_text.strip().split()]
+                        res_ints, logs = rsa_process(ints_in, rsa_p, rsa_q, "decrypt")
+                        output_str = "".join([chr(i) for i in res_ints])
+
+                # 5. Super Encryption Execution
+                elif selected_tab == "Super Enkripsi":
+                    if is_encrypt:
+                        # Enkripsi: Caesar -> Vigenere -> RC4 -> RSA
+                        c1, _ = caesar_cipher(input_text, super_shift, "encrypt")
+                        c2, _ = vigenere_cipher(c1, super_vkey, "encrypt")
+                        c2_bytes = [ord(c) for c in c2]
+                        c3_bytes, _ = rc4_cipher(c2_bytes, super_rkey)
+                        c4_ints, logs_rsa = rsa_process(c3_bytes, super_p, super_q, "encrypt")
+
+                        output_str = " ".join([str(x) for x in c4_ints])
+                        logs = ["=== 1. Caesar Cipher selesai ===",
+                                "=== 2. Vigenère Cipher selesai ===",
+                                "=== 3. RC4 Stream Cipher selesai ===",
+                                "=== 4. RSA Encryption ==="] + logs_rsa
+                    else:
+                        # Dekripsi: RSA -> RC4 -> Vigenere -> Caesar
+                        ints_in = [int(x) for x in input_text.strip().split()]
+                        d1_bytes, logs_rsa = rsa_process(ints_in, super_p, super_q, "decrypt")
+                        d2_bytes, _ = rc4_cipher(d1_bytes, super_rkey)
+                        d2_str = "".join([chr(b) for b in d2_bytes])
+                        d3_str, _ = vigenere_cipher(d2_str, super_vkey, "decrypt")
+                        d4_str, _ = caesar_cipher(d3_str, super_shift, "decrypt")
+
+                        output_str = d4_str
+                        logs = ["=== 1. RSA Decrypt selesai ===",
+                                "=== 2. RC4 Decrypt selesai ===",
+                                "=== 3. Vigenère Decrypt selesai ===",
+                                "=== 4. Caesar Decrypt selesai ==="] + logs_rsa
+
+                # Display Output Result
+                st.markdown(f'<div class="output-box">{output_str}</div>', unsafe_allow_html=True)
+
+                # Display Computation Logs
+                with st.expander(f"Rincian Langkah Komputasi ({len(logs)})"):
+                    for log in logs:
+                        st.markdown(f'<div class="log-item">{log}</div>', unsafe_allow_html=True)
+
+            except Exception as e:
+                st.error(f"Terjadi Kesalahan Pemrosesan: {str(e)}")
+    else:
+        st.markdown(
+            '<div class="output-box" style="color: #A1A1AA;">(Hasil eksekusi akan muncul di sini)</div>',
+            unsafe_allow_html=True,
+        )
