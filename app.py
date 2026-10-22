@@ -569,20 +569,35 @@ elif selected == "RSA":
 elif selected == "Super Enkripsi":
     render_algo_card("Super Enkripsi")
 
-    st.markdown(
+    # Urutan proses menyesuaikan mode operasi:
+    # Enkripsi: Caesar → Vigenère → RC4 → RSA
+    # Dekripsi: RSA → RC4 → Vigenère → Caesar
+    if is_encrypt:
+        pipeline_html = """
+        <div class="pipeline">
+            <div class="pipeline-step">1. Caesar</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">2. Vigenère</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">3. RC4</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">4. RSA</div>
+        </div>
         """
-    <div class="pipeline">
-        <div class="pipeline-step">1. Caesar</div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step">2. Vigenère</div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step">3. RC4</div>
-        <div class="pipeline-arrow">→</div>
-        <div class="pipeline-step">4. RSA</div>
-    </div>
-    """,
-        unsafe_allow_html=True,
-    )
+    else:
+        pipeline_html = """
+        <div class="pipeline">
+            <div class="pipeline-step">1. RSA</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">2. RC4</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">3. Vigenère</div>
+            <div class="pipeline-arrow">→</div>
+            <div class="pipeline-step">4. Caesar</div>
+        </div>
+        """
+
+    st.markdown(pipeline_html, unsafe_allow_html=True)
 
     col_input, col_side = st.columns([3, 2])
     with col_input:
