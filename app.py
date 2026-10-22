@@ -327,6 +327,18 @@ st.markdown(
         color: #FFFFFF !important;
         background-color: #1E293B !important;
     }
+
+    div[data-testid="stExpander"] p,
+    div[data-testid="stExpander"] span,
+    div[data-testid="stExpander"] div,
+    div[data-testid="stExpander"] td,
+    div[data-testid="stExpander"] th,
+    div[data-testid="stExpander"] li,
+    div[data-testid="stExpander"] code {
+        color: #FFFFFF !important;
+        opacity: 1 !important;
+        font-weight: 400 !important;
+}
 </style>
 """,
     unsafe_allow_html=True,
