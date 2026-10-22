@@ -516,7 +516,7 @@ elif selected == "Vigenere Cipher":
 
     if btn:
         if not key:
-    st.error("Kunci tidak boleh kosong!")
+            st.error("Kunci tidak boleh kosong!")
         else:
             res, logs = vigenere_cipher(
                 text, key, "encrypt" if is_encrypt else "decrypt"
