@@ -78,9 +78,7 @@ def rc4(data, key):
         process_log.append(
             f"Data: {char_val} XOR Kunci Stream: {K} -> Hasil: {cipher_val}"
         )
-
-    return result, process_log
-
+        return result, process_l
 
 def gcd(a, b):
     while b != 0:
@@ -92,7 +90,7 @@ def mod_inverse(e, phi):
     for d in range(2, phi):
         if (d * e) % phi == 1:
             return d
-    return -1
+            return -1
 
 
 def rsa_process(text_or_ints, p, q, mode):
