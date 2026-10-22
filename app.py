@@ -3,8 +3,6 @@ import time
 import streamlit as st
 from streamlit_option_menu import option_menu
 
-
-
 def caesar_cipher(text, shift, mode):
     result = ""
     process_log = []
