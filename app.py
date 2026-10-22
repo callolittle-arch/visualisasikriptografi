@@ -53,8 +53,6 @@ def vigenere_cipher(text, key, mode):
         result += char
         process_log.append(f"'{char}' -> Tetap -> '{char}'")
 
-            key_idx += 1
-
     return result, process_log
 
 
