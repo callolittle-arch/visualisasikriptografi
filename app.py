@@ -49,10 +49,7 @@ for char in text:
     else:
         result += char
         process_log.append(f"'{char}' -> Tetap -> '{char}'")
-
-    return result, process_log
-
-
+        
     return result, process_log
 
 
