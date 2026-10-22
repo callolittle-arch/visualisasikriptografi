@@ -24,6 +24,7 @@ def caesar_cipher(text, shift, mode):
 
 
 
+
 def vigenere_cipher(text, key, mode):
     result = ""
     process_log = []
