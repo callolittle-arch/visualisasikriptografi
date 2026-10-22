@@ -311,7 +311,7 @@ st.markdown(
         font-weight: 600;
         font-size: 0.85rem;
     }
-    /* Memperjelas teks pada Detail Proses */
+    
     div[data-testid="stExpander"] {
         color: #E2E8F0;
     }
@@ -319,12 +319,12 @@ st.markdown(
     div[data-testid="stExpander"] p,
     div[data-testid="stExpander"] li,
     div[data-testid="stExpander"] span {
-        color: #E2E8F0 !important;
+        color: #FFFFFF !important;
     }
     
     div[data-testid="stExpander"] pre,
     div[data-testid="stExpander"] code {
-        color: #F8FAFC !important;
+        color: #FFFFFF !important;
         background-color: #1E293B !important;
     }
 </style>
