@@ -28,23 +28,29 @@ def vigenere_cipher(text, key, mode):
     key_idx = 0
 
     for char in text:
-        if char.isalpha():
+        if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
             start = ord("A") if char.isupper() else ord("a")
-            shift = ord(key[key_idx % len(key)]) - ord("A")
+
+            # Ambil karakter kunci yang berupa huruf
+            key_char = key[key_idx % len(key)]
+
+            # Jika karakter kunci bukan huruf, gunakan nilai ASCII-nya
+            shift = ord(key_char.upper()) - ord("A") if key_char.isalpha() else ord(key_char) % 26
+
             if mode == "decrypt":
                 shift = -shift
 
             new_char = chr((ord(char) - start + shift) % 26 + start)
             result += new_char
             process_log.append(
-                f"'{char}' + Kunci '{key[key_idx % len(key)]}' (Shift {shift}) -> '{new_char}'"
+                f"'{char}' + Kunci '{key_char}' (Shift {shift}) -> '{new_char}'"
             )
             key_idx += 1
         else:
             result += char
             process_log.append(f"'{char}' -> Tetap -> '{char}'")
-
-    return result, process_log
+            
+        return result, process_log
 
 
 def rc4(data, key):
@@ -534,7 +540,7 @@ elif selected == "Vigenere Cipher":
 
     if btn:
         if not key.isalpha():
-            st.error("Kunci harus berupa huruf!")
+            st.error("Kunci tidak boleh kosong")
         else:
             res, logs = vigenere_cipher(
                 text, key, "encrypt" if is_encrypt else "decrypt"
