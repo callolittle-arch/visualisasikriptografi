@@ -665,7 +665,7 @@ elif selected == "Super Enkripsi":
                 final_res = " ".join([str(x) for x in out_rsa])
 
                 render_result("Hasil Super Enkripsi", final_res)
-import streamlit as st
+                import streamlit as st
 
 # ==========================================
 # 1. LOGIKA ALGORITMA KRIPTOGRAFI
