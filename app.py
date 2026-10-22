@@ -31,7 +31,7 @@ def vigenere_cipher(text, key, mode):
     key_idx = 0
 
     for char in text:
-    if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
+     if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
         start = ord("A") if char.isupper() else ord("a")
 
         # Ambil karakter kunci yang berupa huruf
