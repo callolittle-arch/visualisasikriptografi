@@ -31,27 +31,29 @@ def vigenere_cipher(text, key, mode):
     key_idx = 0
 
     for char in text:
-        # Hanya huruf ASCII A-Z dan a-z yang dienkripsi
-        if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
-            start = ord("A") if char.isupper() else ord("a")
-            shift = ord(key[key_idx % len(key)]) - ord("A")
+    if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
+        start = ord("A") if char.isupper() else ord("a")
 
-            if mode == "decrypt":
-                shift = -shift
+        # Ambil karakter kunci yang berupa huruf
+        key_char = key[key_idx % len(key)]
 
-            new_char = chr((ord(char) - start + shift) % 26 + start)
-            result += new_char
+        # Jika karakter kunci bukan huruf, gunakan nilai ASCII-nya
+        shift = ord(key_char.upper()) - ord("A") if key_char.isalpha() else ord(key_char) % 26
 
-            process_log.append(
-                f"'{char}' + Kunci '{key[key_idx % len(key)]}' "
-                f"(Shift {shift}) -> '{new_char}'"
-            )
+        if mode == "decrypt":
+            shift = -shift
+
+        new_char = chr((ord(char) - start + shift) % 26 + start)
+        result += new_char
+        process_log.append(
+            f"'{char}' + Kunci '{key_char}' (Shift {shift}) -> '{new_char}'"
+        )
+        key_idx += 1
+    else:
+        result += char
+        process_log.append(f"'{char}' -> Tetap -> '{char}'")
 
             key_idx += 1
-        else:
-            # Angka, spasi, simbol, dan tanda baca tetap dipertahankan
-            result += char
-            process_log.append(f"'{char}' -> Tetap -> '{char}'")
 
     return result, process_log
 
@@ -515,8 +517,8 @@ elif selected == "Vigenere Cipher":
         btn = st.button("Proses Vigenère", key="btn_vigenere")
 
     if btn:
-        if not key.isalpha():
-            st.error("Kunci harus berupa huruf!")
+        if not key:
+    st.error("Kunci tidak boleh kosong!")
         else:
             res, logs = vigenere_cipher(
                 text, key, "encrypt" if is_encrypt else "decrypt"
