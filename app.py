@@ -50,7 +50,7 @@ def vigenere_cipher(text, key, mode):
             result += char
             process_log.append(f"'{char}' -> Tetap -> '{char}'")
             
-        return result, process_log
+    return result, process_log
 
 
 def rc4(data, key):
@@ -181,7 +181,7 @@ st.markdown(
         font-weight: 700;
         margin: 0;
         letter-spacing: -0.02em;
-        color: #BB6464;
+        color: #FFFFFF;
     }
 
     /* Navbar Wrapper */
@@ -290,7 +290,7 @@ st.markdown(
         font-size: 0.8rem;
         padding: 0.2rem 0;
         border-bottom: 1px solid #F1F5F9;
-        color: #475569;
+        color: #000000;
     }
 
     /* Pipeline Super Enkripsi */
@@ -533,13 +533,13 @@ elif selected == "Vigenere Cipher":
             "Input Teks:", height=130, placeholder="Masukkan teks..."
         )
     with col_side:
-        key = st.text_input("Kunci (Huruf):", value="KUNCI")
+        key = st.text_input("Kunci : ", value="KUNCI")
         st.caption("Kunci alfabetik berulang.")
         st.write("")
         btn = st.button("Proses Vigenère", key="btn_vigenere")
 
     if btn:
-        if not key.isalpha():
+        if not key:
             st.error("Kunci tidak boleh kosong")
         else:
             res, logs = vigenere_cipher(
