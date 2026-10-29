@@ -436,6 +436,7 @@ with toggler_col:
 
         st.markdown(
             """
+            <p style="color: white;">---------</p>
             <p style="color: white;">
                 Buka bagian <b>#Lihat Proses#</b> di bawah hasil untuk memahami langkah kerja algoritmanya.
             </p>
