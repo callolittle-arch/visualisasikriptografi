@@ -435,7 +435,7 @@ with toggler_col:
             unsafe_allow_html=True)
 
         st.markdown(
-            '<p > --------- </p>',
+            '<p> --------- </p>',
             '<p style="color: white;">Buka bagian #Lihat Proses# di bawah hasil untuk memahami langkah kerja algoritmanya.</p>',
             unsafe_allow_html=True
         )
