@@ -795,7 +795,7 @@ if not st.session_state.logged_in:
     st.markdown(
         """
         <div class="login-hero">
-            <div class="login-logo">[LOGIN]</div>
+            <div class="login-logo"></div>
             <h2>KriptoLab</h2>
             <p>Masuk untuk mengakses modul kriptosistem.<br/>Password divalidasi dengan SHA-256.</p>
         </div>
@@ -864,7 +864,7 @@ with st.sidebar:
     st.markdown(
         """
         <div class="brand">
-            <div class="brand-logo">[LOGIN]</div>
+            <div class="brand-logo"></div>
             <div>
                 <div class="brand-name">KriptoLab</div>
                 <div class="brand-sub">Modul Kriptosistem</div>
